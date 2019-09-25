@@ -1,6 +1,7 @@
 src_path=./src
 dst_path=./dst
 ffprobe_exe=ffprobe
+move_file=true
 
 [type]
 .jpg=exif
