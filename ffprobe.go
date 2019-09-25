@@ -1,4 +1,4 @@
-package ffprobe
+package main
 
 import (
 	"encoding/json"
@@ -33,8 +33,8 @@ type ProbeData struct {
 	Format *ProbeFormat `json:"format,omitempty"`
 }
 
-func Probe(FFPROBE_EXE, filename string) (*ProbeData, error) {
-	cmd := exec.Command(FFPROBE_EXE, "-v", "quiet", "-show_format", filename, "-print_format", "json")
+func Probe(filename string) (*ProbeData, error) {
+	cmd := exec.Command(FfprobeExe, "-v", "quiet", "-show_format", filename, "-print_format", "json")
 	cmd.Stderr = os.Stderr
 
 	r, err := cmd.StdoutPipe()

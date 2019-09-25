@@ -1,7 +1,6 @@
 package main
 
 import (
-	"file_archive/ffprobe"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -48,7 +47,7 @@ func process() {
 			}
 			break
 		case "mp4":
-			tag, err := ffprobe.Probe(FfprobeExe, filePath)
+			tag, err := Probe(filePath)
 			if err != nil {
 				log.Printf("%s, get mp4 tag failed, err=%v\n", filePath, err)
 				errCount++
