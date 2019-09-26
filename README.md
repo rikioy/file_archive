@@ -16,6 +16,8 @@ ffprobe_exe=ffprobe
 copy_mode=false                
 
 # 扩展类型名对应的处理程序可自行添
+# 例如要添加对.bmp 格式支持,添加如下
+# .bmp=exif
 [type]
 .jpg=exif
 .mp4=mp4
@@ -36,3 +38,10 @@ file_archive process
 ```
 1. 文件名，可以在failed.log中查看处理失败的文件名
 2. 日期字符串，要把文件加入到哪个日期下，例如格式“20060102”会把文件加入到2006/01-02目录下
+
+## 其他
+### ffmpeg 下载
+ * win https://ffmpeg.zeranoe.com/builds/
+ * linux https://ffmpeg.org/download.html
+### 识别格式
+理论上有exif信息的图片类，或者ffprobe能读取的视频类文件都支持
