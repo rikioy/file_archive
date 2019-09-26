@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
-	"os"
 	"bufio"
+	log "github.com/sirupsen/logrus"
+	"os"
 
 	"github.com/urfave/cli"
 	"gopkg.in/ini.v1"
@@ -11,23 +11,30 @@ import (
 
 var (
 	//SrcPath 原始目录
-	SrcPath    string // 
+	SrcPath string //
 	//DstPath 目标目录
-	DstPath    string
+	DstPath string
 	//FfprobeExe ffprobe路径
 	FfprobeExe string
 	//Cfg 配置文件
-	Cfg         *ini.File
-	//MoveFile 是否移动文件
-	MoveFile bool
+	Cfg *ini.File
+	//CopyMode 是否复制文件
+	CopyMode bool
+	fileLog *log.Logger
+
 )
 
 func init() {
-	f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE, 0755)
-	log.SetOutput(f)
+	var err error
+	f, err := os.OpenFile("failed.log", os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalf("fail to open log file, err=%v", err)
+	}
+	fileLog = log.New()
+	fileLog.SetOutput(f)
 	Cfg, err = ini.Load("config.ini")
 	if err != nil {
-		log.Fatalf("fail to read file, err=%v\n", err)
+		log.Fatalf("fail to read config file, err=%v", err)
 	}
 }
 
@@ -35,11 +42,11 @@ func main() {
 	SrcPath = Cfg.Section("").Key("src_path").String()
 	DstPath = Cfg.Section("").Key("dst_path").String()
 	FfprobeExe = Cfg.Section("").Key("ffprobe_exe").String()
-	MoveFile, _= Cfg.Section("").Key("move_file").Bool()
-	log.Printf("src path:%s\n", SrcPath)
-	log.Printf("dst path:%s\n", DstPath)
-	log.Printf("ffprobe_exe:%s\n", FfprobeExe)
-	log.Printf("move_file:%t\n", MoveFile)
+	CopyMode, _ = Cfg.Section("").Key("copy_mode").Bool()
+	log.Printf("src path:%s", SrcPath)
+	log.Printf("dst path:%s", DstPath)
+	log.Printf("ffprobe_exe:%s", FfprobeExe)
+	log.Printf("copy_mode:%t", CopyMode)
 
 	app := cli.NewApp()
 	app.Commands = []cli.Command{

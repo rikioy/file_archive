@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"path/filepath"
 	"time"
 )
@@ -15,24 +15,27 @@ func add(name, dateStr string) (err error) {
 	}
 	dstPath := fmt.Sprintf("%s/%s/%s/", DstPath, modTime.Format("2006"), modTime.Format("01-02"))
 	dbFile := fmt.Sprintf("%s/%s/album.db", DstPath, modTime.Format("2006"))
-	if err = insert(SrcPath, dstPath, dbFile, name); err != nil {
+	if err = insert(SrcPath, dstPath, dbFile, name, CopyMode); err != nil {
 		return
 	 }
-	 fmt.Printf("插入文件成功: %s/%s => %s/%s\n", SrcPath, name, dstPath, name)
+	 log.Infof("插入文件成功: %s/%s => %s/%s", SrcPath, name, dstPath, name)
 	return
 }
 
 func process() {
 	files, err := ioutil.ReadDir(SrcPath)
 	if err != nil {
-		log.Fatalf("read dir %s failed, err=%v\n", SrcPath, err)
+		log.Fatalf("read dir %s failed, err=%v", SrcPath, err)
 	}
 	var errCount int
 	for _, v := range files {
+		singleLogger := fileLog.WithFields(log.Fields{
+			"file:" : v.Name(),
+		})
 		filePath := SrcPath + "/" + v.Name()
 		fileExt := filepath.Ext(filePath)
 		if !Cfg.Section("type").HasKey(fileExt) {
-			log.Printf("%s file type %s unsupport.\n", filePath, fileExt)
+			singleLogger.Printf("%s file type %s unsupport.", filePath, fileExt)
 			errCount++
 			continue
 		}
@@ -41,7 +44,7 @@ func process() {
 		case "exif":
 			modTime, err = getexif(filePath)
 			if err != nil {
-				log.Printf("%s, get picture time failed, err=%v\n", filePath, err)
+				singleLogger.Printf("%s, get picture time failed, err=%v", filePath, err)
 				errCount++
 				continue
 			}
@@ -49,13 +52,13 @@ func process() {
 		case "mp4":
 			tag, err := Probe(filePath)
 			if err != nil {
-				log.Printf("%s, get mp4 tag failed, err=%v\n", filePath, err)
+				singleLogger.Printf("%s, get mp4 tag failed, err=%v", filePath, err)
 				errCount++
 				continue
 			}
 			modTime, err = time.Parse("2006-01-02T15:04:05.000000Z", tag.Format.Tags["creation_time"])
 			if err != nil {
-				log.Printf("%s, parse mp4 time failed, err=%v\n", filePath, err)
+				singleLogger.Printf("%s, parse mp4 time failed, err=%v", filePath, err)
 				errCount++
 				continue
 			}
@@ -63,9 +66,9 @@ func process() {
 		}
 		
 		 if err := add(v.Name(), modTime.Format("20060102")); err != nil {
-			log.Printf("%s, insert failed, err=%v\n", filePath, err)
+			singleLogger.Printf("%s, insert failed, err=%v", filePath, err)
 			errCount++
 		 }
 	}
-	fmt.Printf("批量插入完成，失败%d个，请查看log.txt\n", errCount)
+	log.Infof("批量插入完成，失败%d个，失败记录请查看failed.log", errCount)
 }

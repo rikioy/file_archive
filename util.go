@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func insert(srcPath, dstPath, dbFile, name string) (err error) {
+func insert(srcPath, dstPath, dbFile, name string, copyMode bool) (err error) {
 	srcFile := srcPath + "/" + name
 	dstFile := dstPath + "/" + name
 
@@ -58,11 +58,21 @@ func insert(srcPath, dstPath, dbFile, name string) (err error) {
 		err = fmt.Errorf("已经存在相同MD5的文件, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
 		return
 	}
-	_, err = filecopy(srcFile, dstFile)
-	if err != nil {
-		err = fmt.Errorf("复制文件失败, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
-		return
+	if copyMode {
+		_, err = filecopy(srcFile, dstFile)
+		if err != nil {
+			err = fmt.Errorf("复制文件失败, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
+			return
+		}
+	} else {
+		err = os.Rename(srcFile, dstFile)
+		if err != nil {
+			err = fmt.Errorf("移动文件失败, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
+			return
+		}
 	}
+	
+	
 
 	dstMd5, err := filemd5(dstFile)
 	if err != nil {

@@ -1,7 +1,7 @@
-src_path=./src
+src_path=../testpicture/src
 dst_path=./dst
 ffprobe_exe=ffprobe
-move_file=true
+copy_mode=true
 
 [type]
 .jpg=exif
