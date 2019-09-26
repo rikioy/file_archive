@@ -15,7 +15,7 @@ func insert(srcPath, dstPath, dbFile, name string, copyMode bool) (err error) {
 	srcFile := srcPath + "/" + name
 	dstFile := dstPath + "/" + name
 
-	srcMd5 , err := filemd5(srcFile)
+	srcMd5, err := filemd5(srcFile)
 	if err != nil {
 		err = fmt.Errorf("%v, %s", err, srcFile)
 		return
@@ -30,7 +30,7 @@ func insert(srcPath, dstPath, dbFile, name string, copyMode bool) (err error) {
 
 	db, err := sql.Open("sqlite3", dbFile)
 	if err != nil {
-		err = fmt.Errorf("创建数据库链接, %s/%s/%s ", dbFile)
+		err = fmt.Errorf("创建数据库链接, %s", dbFile)
 		return
 	}
 
@@ -71,8 +71,6 @@ func insert(srcPath, dstPath, dbFile, name string, copyMode bool) (err error) {
 			return
 		}
 	}
-	
-	
 
 	dstMd5, err := filemd5(dstFile)
 	if err != nil {
