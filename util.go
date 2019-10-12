@@ -108,11 +108,11 @@ func listAll(path string) (infos []fileinfo, err error) {
 	}
 	for _, info := range readInfos {
 		if info.IsDir() {
-			files, _ := listAll(path + info.Name() + "/")
+			files, _ := listAll(path + info.Name() + Sep)
 			infos = append(infos, files...)
 		} else {
 			var tmp = fileinfo{}
-			tmp.Path = path + "/"
+			tmp.Path = path + Sep
 			tmp.Info = info
 			infos = append(infos, tmp)
 		}

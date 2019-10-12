@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -20,6 +21,16 @@ func add(path, name, dateStr string) (err error) {
 	}
 	log.Infof("插入文件成功: %s%s => %s%s", path, name, dstPath, name)
 	return
+}
+
+func singleAdd(filepath, date string) error {
+	info, err := os.Stat(filepath)
+	if err != nil {
+		log.Fatalf("read file %s failed, err=%v", filepath, err)
+	}
+	pathEnd := len(filepath) - len(info.Name())
+	path := filepath[:pathEnd]
+	return add(path, info.Name(), date)
 }
 
 func deal(v fileinfo) bool {

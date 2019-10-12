@@ -19,6 +19,8 @@ var (
 	//Cfg 配置文件
 	Cfg     *ini.File
 	fileLog *log.Logger
+	//Sep 操作系统分隔符
+	Sep string
 )
 
 func init() {
@@ -33,6 +35,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("fail to read config file, err=%v", err)
 	}
+	Sep = string(os.PathSeparator)
 }
 
 func main() {
@@ -56,12 +59,11 @@ func main() {
 			Aliases: []string{"a"},
 			Usage:   "add a single file to dst",
 			Flags: []cli.Flag{
-				cli.StringFlag{Name: "path, p"},
 				cli.StringFlag{Name: "file, f"},
 				cli.StringFlag{Name: "date, d"},
 			},
 			Action: func(c *cli.Context) error {
-				err := add(c.String("path"), c.String("file"), c.String("date"))
+				err := singleAdd(c.String("file"), c.String("date"))
 				return err
 			},
 		},
