@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ProbeFormat Probe结构
 type ProbeFormat struct {
 	Filename         string            `json:"filename"`
 	NBStreams        int               `json:"nb_streams"`

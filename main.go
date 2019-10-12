@@ -10,18 +10,15 @@ import (
 )
 
 var (
-	//SrcPath 原始目录
-	SrcPath string //
+	//FailPath 原始目录
+	FailPath string
 	//DstPath 目标目录
 	DstPath string
 	//FfprobeExe ffprobe路径
 	FfprobeExe string
 	//Cfg 配置文件
-	Cfg *ini.File
-	//CopyMode 是否复制文件
-	CopyMode bool
+	Cfg     *ini.File
 	fileLog *log.Logger
-
 )
 
 func init() {
@@ -39,14 +36,12 @@ func init() {
 }
 
 func main() {
-	SrcPath = Cfg.Section("").Key("src_path").String()
+	FailPath = Cfg.Section("").Key("fail_path").String()
 	DstPath = Cfg.Section("").Key("dst_path").String()
 	FfprobeExe = Cfg.Section("").Key("ffprobe_exe").String()
-	CopyMode, _ = Cfg.Section("").Key("copy_mode").Bool()
-	log.Printf("src path:%s", SrcPath)
+	log.Printf("src path:%s", FailPath)
 	log.Printf("dst path:%s", DstPath)
 	log.Printf("ffprobe_exe:%s", FfprobeExe)
-	log.Printf("copy_mode:%t", CopyMode)
 
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
@@ -55,11 +50,12 @@ func main() {
 			Aliases: []string{"a"},
 			Usage:   "add a single file to dst",
 			Flags: []cli.Flag{
+				cli.StringFlag{Name: "path, p"},
 				cli.StringFlag{Name: "file, f"},
 				cli.StringFlag{Name: "date, d"},
 			},
 			Action: func(c *cli.Context) error {
-				err := add(c.String("file"), c.String("date"))
+				err := add(c.String("path"), c.String("file"), c.String("date"))
 				return err
 			},
 		},
@@ -67,8 +63,11 @@ func main() {
 			Name:    "process",
 			Aliases: []string{"p"},
 			Usage:   "process the folder file to dst",
+			Flags: []cli.Flag{
+				cli.StringFlag{Name: "path, p"},
+			},
 			Action: func(c *cli.Context) error {
-				process()
+				process(c.String("path"))
 				return nil
 			},
 		},

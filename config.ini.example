@@ -1,8 +1,0 @@
-src_path=../testpicture/src
-dst_path=./dst
-ffprobe_exe=ffprobe
-copy_mode=true
-
-[type]
-.jpg=exif
-.mp4=mp4

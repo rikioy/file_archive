@@ -2,94 +2,18 @@ package main
 
 import (
 	"crypto/md5"
-	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/rwcarlsen/goexif/exif"
 	"io"
+	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/rwcarlsen/goexif/exif"
 )
 
-func insert(srcPath, dstPath, dbFile, name string, copyMode bool) (err error) {
-	srcFile := srcPath + "/" + name
-	dstFile := dstPath + "/" + name
-
-	srcMd5, err := filemd5(srcFile)
-	if err != nil {
-		err = fmt.Errorf("%v, %s", err, srcFile)
-		return
-	}
-	if !exists(dstPath) {
-		err = os.MkdirAll(dstPath, os.ModePerm)
-		if err != nil {
-			err = fmt.Errorf("创建文件夹失败, %s ", dstPath)
-			return
-		}
-	}
-
-	db, err := sql.Open("sqlite3", dbFile)
-	if err != nil {
-		err = fmt.Errorf("创建数据库链接, %s", dbFile)
-		return
-	}
-
-	sqlTable := `
-		CREATE TABLE IF NOT EXISTS album (
-			md5 char(32) primary key,
-			filename varchar(100),
-			srcPath varchar(200)
-		);
-`
-	_, err = db.Exec(sqlTable)
-	if err != nil {
-		return
-	}
-
-	var count int
-	stat := `SELECT count(*) As count FROM album WHERE md5=$1;`
-	row := db.QueryRow(stat, srcMd5)
-	err = row.Scan(&count)
-	if err != nil {
-		return
-	}
-
-	if count > 0 {
-		err = fmt.Errorf("已经存在相同MD5的文件, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
-		return
-	}
-	if copyMode {
-		_, err = filecopy(srcFile, dstFile)
-		if err != nil {
-			err = fmt.Errorf("复制文件失败, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
-			return
-		}
-	} else {
-		err = os.Rename(srcFile, dstFile)
-		if err != nil {
-			err = fmt.Errorf("移动文件失败, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
-			return
-		}
-	}
-
-	dstMd5, err := filemd5(dstFile)
-	if err != nil {
-		err = fmt.Errorf("生成目标md5失败, %s ", dstFile)
-		return
-	}
-
-	if dstMd5 != srcMd5 {
-		err = fmt.Errorf("复制失败，目标md5和源md5不一致, srcfile:%s\t dstfile:%s ", srcFile, dstFile)
-		return
-	}
-
-	stmt, err := db.Prepare("INSERT INTO album(md5, filename, srcPath) values(?,?,?)")
-	_, err = stmt.Exec(srcMd5, name, dstFile)
-	if err != nil {
-		err = fmt.Errorf("插入数据库失败, %s, err=%v", dstFile, err)
-		return
-	}
-	return
+type fileinfo struct {
+	Path string
+	Info os.FileInfo
 }
 
 func filemd5(path string) (md5Str string, err error) {
@@ -156,5 +80,24 @@ func getexif(path string) (t time.Time, err error) {
 		return
 	}
 	t, err = x.DateTime()
+	return
+}
+
+func listAll(path string) (infos []fileinfo, err error) {
+	readInfos, err := ioutil.ReadDir(path)
+	if err != nil {
+		return
+	}
+	for _, info := range readInfos {
+		if info.IsDir() {
+			files, _ := listAll(path + info.Name() + "/")
+			infos = append(infos, files...)
+		} else {
+			var tmp = fileinfo{}
+			tmp.Path = path
+			tmp.Info = info
+			infos = append(infos, tmp)
+		}
+	}
 	return
 }
