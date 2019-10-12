@@ -9,8 +9,8 @@ import (
 )
 
 func insert(srcPath, dstPath, dbFile, name string) (err error) {
-	srcFile := srcPath + "/" + name
-	dstFile := dstPath + "/" + name
+	srcFile := srcPath + name
+	dstFile := dstPath + name
 
 	srcMd5, err := filemd5(srcFile)
 	if err != nil {
@@ -52,7 +52,7 @@ func insert(srcPath, dstPath, dbFile, name string) (err error) {
 	}
 
 	if count > 0 {
-		err = fmt.Errorf("已经存在相同MD5的文件, srcfile:%s dstfile:%s ", srcFile, dstFile)
+		//fmt.Printf("已经存在相同MD5的文件, srcfile:%s dstfile:%s\n", srcFile, dstFile)
 		return
 	}
 

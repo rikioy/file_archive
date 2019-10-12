@@ -2,3 +2,4 @@ file_archive
 dst
 *.txt
 config.ini
+*.log

@@ -18,7 +18,7 @@ func add(path, name, dateStr string) (err error) {
 	if err = insert(path, dstPath, dbFile, name); err != nil {
 		return
 	}
-	log.Infof("插入文件成功: %s/%s => %s/%s", path, name, dstPath, name)
+	log.Infof("插入文件成功: %s%s => %s%s", path, name, dstPath, name)
 	return
 }
 
@@ -68,6 +68,9 @@ func deal(v fileinfo) bool {
 }
 
 func process(path string) {
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
 	files, err := listAll(path)
 	if err != nil {
 		log.Fatalf("read dir %s failed, err=%v", path, err)
@@ -78,8 +81,8 @@ func process(path string) {
 			succCount++
 		} else {
 			errCount++
+			filecopy(v.Path+v.Info.Name(), FailPath+v.Info.Name())
 		}
-
 	}
 	log.Infof("批量插入完成，成功%d个，失败%d个，失败记录请查看failed.log", succCount, errCount)
 }

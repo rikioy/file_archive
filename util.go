@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"crypto/md5"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/rwcarlsen/goexif/exif"
@@ -42,6 +46,18 @@ func exists(path string) bool {
 	return true
 }
 
+func changename(path string) string {
+	if !exists(path) {
+		return path
+	}
+	fileExt := filepath.Ext(path)
+	pathlen := len(path)
+	subpath := path[:pathlen-len(fileExt)]
+	randStr := createRandomString(4)
+	newpath := fmt.Sprintf("%s-%s%s", subpath, randStr, fileExt)
+	return changename(newpath)
+}
+
 func filecopy(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
@@ -51,6 +67,8 @@ func filecopy(src, dst string) (int64, error) {
 	if !sourceFileStat.Mode().IsRegular() {
 		return 0, fmt.Errorf("%s is not a regular file", src)
 	}
+
+	dst = changename(dst)
 
 	source, err := os.Open(src)
 	if err != nil {
@@ -94,10 +112,23 @@ func listAll(path string) (infos []fileinfo, err error) {
 			infos = append(infos, files...)
 		} else {
 			var tmp = fileinfo{}
-			tmp.Path = path
+			tmp.Path = path + "/"
 			tmp.Info = info
 			infos = append(infos, tmp)
 		}
 	}
 	return
+}
+
+func createRandomString(len int) string {
+	var container string
+	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	b := bytes.NewBufferString(str)
+	length := b.Len()
+	bigInt := big.NewInt(int64(length))
+	for i := 0; i < len; i++ {
+		randomInt, _ := rand.Int(rand.Reader, bigInt)
+		container += string(str[randomInt.Int64()])
+	}
+	return container
 }

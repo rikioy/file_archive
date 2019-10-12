@@ -38,6 +38,12 @@ func init() {
 func main() {
 	FailPath = Cfg.Section("").Key("fail_path").String()
 	DstPath = Cfg.Section("").Key("dst_path").String()
+	if FailPath[len(FailPath)-1:] != "/" {
+		FailPath = FailPath + "/"
+	}
+	if DstPath[len(DstPath)-1:] != "/" {
+		DstPath = DstPath + "/"
+	}
 	FfprobeExe = Cfg.Section("").Key("ffprobe_exe").String()
 	log.Printf("src path:%s", FailPath)
 	log.Printf("dst path:%s", DstPath)
