@@ -29,7 +29,7 @@ ffprobe_exe=ffprobe
 
 ### 批量处理文件
 ```
-file_archive process -f 原始文件夹完整路径
+file_archive process -p 原始文件夹完整路径
 ```
 
 ### 单独处理文件
