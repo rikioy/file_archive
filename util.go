@@ -58,31 +58,33 @@ func changename(path string) string {
 	return changename(newpath)
 }
 
-func filecopy(src, dst string) (int64, error) {
+func filecopy(src, dst string) (name string, err error) {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
+		err = fmt.Errorf("%s is not a regular file", src)
+		return
 	}
 
 	dst = changename(dst)
+	name = dst
 
 	source, err := os.Open(src)
 	if err != nil {
-		return 0, err
+		return
 	}
 	defer source.Close()
 
 	destination, err := os.Create(dst)
 	if err != nil {
-		return 0, err
+		return
 	}
 	defer destination.Close()
-	nBytes, err := io.Copy(destination, source)
-	return nBytes, err
+	_, err = io.Copy(destination, source)
+	return
 }
 
 func getexif(path string) (t time.Time, err error) {
@@ -108,11 +110,11 @@ func listAll(path string) (infos []fileinfo, err error) {
 	}
 	for _, info := range readInfos {
 		if info.IsDir() {
-			files, _ := listAll(path + info.Name() + Sep)
+			files, _ := listAll(path + Sep + info.Name())
 			infos = append(infos, files...)
 		} else {
 			var tmp = fileinfo{}
-			tmp.Path = path + Sep
+			tmp.Path = path
 			tmp.Info = info
 			infos = append(infos, tmp)
 		}
